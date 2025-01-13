@@ -2,7 +2,7 @@ import socket
 import threading
 
 
-HOST = 'your-server-ip'
+HOST = input("input your server ip here: ")
 PORT = 5000
 
 def receivemessages(sock: socket.socket) -> None:
