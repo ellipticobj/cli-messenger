@@ -16,7 +16,7 @@ def receivemessages(sock: socket.socket) -> None:
     while True:
         try:
             message = sock.recv(1024).decode()
-            print(f"\n{message}")
+            print(f"\n{message}\n")
         except Exception as e:
             print(f"error receiving message {e}")
             break
@@ -29,7 +29,7 @@ def startclient() -> None:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         try:
             client_socket.connect((HOST, PORT))
-            print("connected to the server. start typing below")
+            print("joined the chat.")
 
             # Start a thread to listen for incoming messages
             threading.Thread(target=receivemessages, args=(client_socket,), daemon=True).start()
@@ -43,5 +43,5 @@ def startclient() -> None:
         except Exception as e:
             print(f"connection error {e}")
 
-if __name__ == "__main__":
-    startclient()
+
+startclient()
