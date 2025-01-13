@@ -2,7 +2,7 @@ import socket
 import threading
 
 HOST = '0.0.0.0'
-PORT = 6969
+PORT = 7171
 
 clients = []
 
@@ -21,25 +21,26 @@ def broadcast(message: bytes, sender: socket.socket) -> None:
                 clients.remove(client)
 
 
-def handleclient(clientsock: socket.socket) -> None:
+def handleclient(client: socket.socket) -> None:
     '''
     handles communication
     '''
     
     while True:
         try:
-            message = clientsock.recv(1024)
+            message = client.recv(1024)
             if not message:
                 break
-            broadcast(message, clientsock)
+            broadcast(message, client)
+            print(f"{client} sent message: {message}")
         except Exception as e:
             print(f"client error: {e}")
             break
     
-    print("disconnected")
-    clients.remove(clientsock)
-    clientsock.close()
-
+    print(f"{client} disconnected")
+    clients.remove(client)
+    client.close()
+    
 
 def startserver() -> None:
     '''

@@ -1,13 +1,13 @@
 import socket
 import threading
 
-choice = input("do you want to use default server config?\nHOST=luna.hackclub.app\nPORT=6969\n[Y/n]> ").lower().strip()
+choice = input("do you want to use default server config?\nHOST=luna.hackclub.app\nPORT=7171\n[Y/n]> ").lower().strip()
 if choice == "n":
     HOST = input("input server ip here: ")
     PORT = input("input port: ")
 else:
     HOST = 'luna.hackclub.app'
-    PORT = 6969
+    PORT = 7171
 
 def receivemessages(sock: socket.socket) -> None:
     """
@@ -35,7 +35,7 @@ def startclient() -> None:
             threading.Thread(target=receivemessages, args=(client_socket,), daemon=True).start()
 
             while True:
-                message: str = input("> ")
+                message = input("> ")
                 if message.lower() == 'exit':
                     print("Disconnecting...")
                     break
