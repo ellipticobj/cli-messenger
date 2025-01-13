@@ -1,9 +1,13 @@
 import socket
 import threading
 
-
-HOST = input("input your server ip here: ")
-PORT = 5000
+choice = input("do you want to use default server config?\nHOST=luna.hackclub.app\nPORT=6969\n[Y/n]> ").lower().strip()
+if choice == "n":
+    HOST = input("input server ip here: ")
+    PORT = input("input port: ")
+else:
+    HOST = 'luna.hackclub.app'
+    PORT = 6969
 
 def receivemessages(sock: socket.socket) -> None:
     """
