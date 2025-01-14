@@ -30,7 +30,7 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
     try:
         # username handling
         while True:
-            client.send("[SYS]: username: ".encode())
+            client.send("[SYS]: username: ")
             username = client.recv(1024).decode().strip()
             if username in disallowedusernames:
                 client.send("[SYS]: username disallowed.")
@@ -53,8 +53,7 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
         broadcast(f"{username} disconnected", )
         print(f"(from {addr})")
         client.close()
-    
-    print(f"{client} disconnected")
+
     del clients[client]
     client.close()
     
