@@ -37,6 +37,7 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
     handles communication
     '''
     try:
+        client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         # username handling
         username = client.recv(1024).decode().strip()
         clients[client] = username

@@ -13,8 +13,9 @@ else:
 serverrunning = True
 
 def receiveprivmessages(sock: socket.socket) -> None:
+    global serverrunning
     try:
-        while True:
+        while serverrunning:
             try:
                 message = sock.recv(1024).decode()
 
@@ -36,11 +37,12 @@ def receivemessages(sock: socket.socket) -> None:
     """
     receives messages and prints them
     """
+    global serverrunning
     consecmessage = 0
     prevmessage = ""
     try:
         buffer = ""
-        while True:
+        while serverrunning:
             try:
                 data = sock.recv(1024).decode()
                 buffer += data
@@ -55,7 +57,7 @@ def receivemessages(sock: socket.socket) -> None:
                                 print(f"[CLIENT] more than 20 identical messages received, looks like the server is down. ")
                                 print(f"[CLIENT] blocked incoming messages just to be safe. if you think this is an error, reconnect again :3")
                                 print(f"[CLIENT] press control+c to exit")
-                                break
+                                serverrunning = False
                             consecmessage += 1
                         prevmessage = message
 
@@ -74,6 +76,7 @@ def startclient() -> None:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
         try:
             client.connect((HOST, PORT))
+            client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)  # Disable Nagle's algorithm
             while True:
                 # username
                 username = input("[CLIENT] username: ").strip()
