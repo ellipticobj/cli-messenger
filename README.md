@@ -2,11 +2,14 @@
 simple cli messenger app made with python
 
 # running
-## server
+git clone this repo
+`git clone https://github.com/ellipticobj/cli-messenger.git`
+
+## server 
 to run the server, run server.py  
 
 ## clients
-
+run client.py and input the ip and port where the server is running
 
 # roadmap
 documentation  
