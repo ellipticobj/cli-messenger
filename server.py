@@ -8,11 +8,10 @@ PORT = 7171
 
 clients: Dict[socket.socket, str] = {}
 
-def broadcast(message: bytes, sender: socket.socket) -> None:
+def broadcast(message: bytes, sender: socket.socket = "") -> None:
     '''
     broadcasts a message
     '''
-    
     for client in clients:
         if client != sender:
             try:
@@ -51,8 +50,8 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
         print(f"client error: {e}")
     finally:
         username = clients.pop(client, "unknown user")
-        broadcast(f"{username} disconnected")
-        print(f"{username} disconnected (from {addr})")
+        broadcast(f"{username} disconnected", )
+        print(f"(from {addr})")
         client.close()
     
     print(f"{client} disconnected")
@@ -74,7 +73,6 @@ def startserver() -> None:
         while True:
             client, addr = server.accept()
             print()
-            print(f"new connection from {addr}")
             threading.Thread(target=handleclient, args=(client,addr), daemon=True).start()
 
 input("start server: ")
