@@ -1,5 +1,6 @@
 import socket
 import threading
+from utils import *
 
 choice = input("do you want to use default server config?\nHOST=luna.hackclub.app\nPORT=7171\n[Y/n]> ").lower().strip()
 if choice == "n":
@@ -8,6 +9,7 @@ if choice == "n":
 else:
     HOST = 'luna.hackclub.app'
     PORT = 7171
+
 
 def receivemessages(sock: socket.socket) -> None:
     """
@@ -26,20 +28,28 @@ def startclient() -> None:
     starts client
     '''
     
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
         try:
-            client_socket.connect((HOST, PORT))
+            client.connect((HOST, PORT))
+            while True:
+                username = input("[SYS]: username: ").strip()
+                if username in disallowedusernames:
+                    print(f"[SYS]: username disallowed.")
+                    continue
+                client.send(username.encode())
+                break
+
             print("joined the chat.")
 
             # Start a thread to listen for incoming messages
-            threading.Thread(target=receivemessages, args=(client_socket,), daemon=True).start()
+            threading.Thread(target=receivemessages, args=(client,), daemon=True).start()
 
             while True:
                 message = input("> ")
                 if message.lower() == 'exit':
-                    print("Disconnecting...")
+                    print("disconnecting...")
                     break
-                client_socket.send(message.encode())
+                client.send(message.encode())
         except Exception as e:
             print(f"connection error {e}")
 
