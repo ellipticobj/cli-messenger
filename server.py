@@ -113,7 +113,7 @@ def startserver() -> None:
 
 # TODO: add support for custom ip and port
 # TODO: add system commands, sending messages, etc
-input("start server: ")
+# input("start server: ")
 print("starting server")
 print()
 startserver()
