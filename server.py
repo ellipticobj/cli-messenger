@@ -55,7 +55,7 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
         client.close()
     
     print(f"{client} disconnected")
-    clients.remove(client)
+    del clients[client]
     client.close()
     
 
