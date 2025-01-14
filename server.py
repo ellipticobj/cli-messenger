@@ -75,7 +75,7 @@ def startserver() -> None:
             client, addr = server.accept()
             print()
             print(f"new connection from {addr}")
-            threading.Thread(target=handleclient, args=(client,), daemon=True).start()
+            threading.Thread(target=handleclient, args=(client,addr), daemon=True).start()
 
 input("start server: ")
 print("starting server")
