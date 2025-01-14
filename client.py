@@ -10,18 +10,61 @@ else:
     HOST = 'luna.hackclub.app'
     PORT = 7171
 
+serverrunning = True
+
+def receiveprivmessages(sock: socket.socket) -> None:
+    try:
+        while True:
+            try:
+                message = sock.recv(1024).decode()
+
+                # only reads private messages
+                if message.startswith("PRIVATE:"):
+                    content = message[8:]
+                    if content == 'quitserver':
+                        print(f"[CLIENT] server has shut down. exiting...")
+                        serverrunning = False
+                        break
+
+            except Exception as e:
+                print(f"[CLIENT] error at receivesysmessages {e}")
+                break
+    finally:
+        print(f"[CLIENT] private thread closed. please reconnect")
 
 def receivemessages(sock: socket.socket) -> None:
     """
     receives messages and prints them
     """
-    while True:
-        try:
-            message = sock.recv(1024).decode()
-            print(f"\n{message}\n> ", end="")
-        except Exception as e:
-            print(f"[CLIENT] error receiving message {e}")
-            break
+    consecmessage = 0
+    prevmessage = ""
+    try:
+        buffer = ""
+        while True:
+            try:
+                data = sock.recv(1024).decode()
+                buffer += data
+                while "\n" in buffer:
+                    message, buffer = buffer.split("\n", 1)
+
+                    # makes sure the message is a public message
+                    if not message.startswith("PRIVATE:"):
+                        # spam protection to prevent massive cpu usage
+                        if message == prevmessage:
+                            if consecmessage >= 20:
+                                print(f"[CLIENT] more than 20 identical messages received, looks like the server is down. ")
+                                print(f"[CLIENT] blocked incoming messages just to be safe. if you think this is an error, reconnect again :3")
+                                print(f"[CLIENT] press control+c to exit")
+                                break
+                            consecmessage += 1
+                        prevmessage = message
+
+                        print(f"\n{message}\n", end="")
+            except Exception as e:
+                print(f"[CLIENT] error receiving message {e}")
+                break
+    finally:
+        print("[CLIENT] Public message thread closed. please reconnect")
 
 def startclient() -> None:
     '''
@@ -33,27 +76,46 @@ def startclient() -> None:
             client.connect((HOST, PORT))
             while True:
                 # username
-                username = input("[SYS]: username: ").strip()
+                username = input("[CLIENT] username: ").strip()
                 if username in disallowedusernames:
-                    print(f"[SYS]: username disallowed.")
+                    print(f"[CLIENT] username disallowed.")
                     continue
                 client.send(username.encode())
                 break
             
             print(f"you joined the chat as {username}")
         except Exception as e:
-            print(f"[CLIENT] connection error {e}")
+            print(f"[CLIENT] connection error: {e}")
+            print(f"[CLIENT] exiting...")
+            return
         
         try:
             # listen for incoming messages
-            threading.Thread(target=receivemessages, args=(client,), daemon=True).start()
+            pubthread = threading.Thread(target=receivemessages, args=(client,), daemon=True)
+            privthread = threading.Thread(target=receiveprivmessages, args=(client,), daemon=True)
 
-            while True:
+            pubthread.start()
+            privthread.start()
+
+            prevmessage = ""
+            consecmessage = 0
+
+            while serverrunning:
                 message = input("")
+                if message == prevmessage:
+                    if consecmessage >= 10:
+                        print(f"[CLIENT] more than 10 identical messages sent. ")
+                        print(f"[CLIENT] you have been kicked for spamming >:(")
+                        message = 'exit'
+                    consecmessage += 1
+                prevmessage = message
                 if message.lower() == 'exit':
                     print("disconnecting...")
                     break
-                client.send((username, message).encode())
+                client.send(f"{message}\n".encode())
+            
+            pubthread.join()
+            privthread.join()
         except Exception as e:
             print(f"[CLIENT] error while sending message {e}")
 
