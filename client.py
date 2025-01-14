@@ -18,9 +18,9 @@ def receivemessages(sock: socket.socket) -> None:
     while True:
         try:
             message = sock.recv(1024).decode()
-            print(f"\n{message}\n")
+            print(f"\n{message}\n> ", end="")
         except Exception as e:
-            print(f"error receiving message {e}")
+            print(f"[CLIENT] error receiving message {e}")
             break
 
 def startclient() -> None:
@@ -32,26 +32,30 @@ def startclient() -> None:
         try:
             client.connect((HOST, PORT))
             while True:
+                # username
                 username = input("[SYS]: username: ").strip()
                 if username in disallowedusernames:
                     print(f"[SYS]: username disallowed.")
                     continue
                 client.send(username.encode())
                 break
-
-            print("joined the chat.")
-
-            # Start a thread to listen for incoming messages
+            
+            print(f"you joined the chat as {username}")
+        except Exception as e:
+            print(f"[CLIENT] connection error {e}")
+        
+        try:
+            # listen for incoming messages
             threading.Thread(target=receivemessages, args=(client,), daemon=True).start()
 
             while True:
-                message = input("> ")
+                message = input("")
                 if message.lower() == 'exit':
                     print("disconnecting...")
                     break
-                client.send(message.encode())
+                client.send((username, message).encode())
         except Exception as e:
-            print(f"connection error {e}")
+            print(f"[CLIENT] error while sending message {e}")
 
 
 startclient()

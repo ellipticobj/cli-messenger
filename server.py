@@ -17,7 +17,7 @@ def broadcast(message: bytes, sender: socket.socket = "") -> None:
             try:
                 client.send(message.encode())
             except Exception as e:
-                print(f"error sending message {e}")
+                print(f"[SERVER] error sending message {e}")
                 client.close()
                 del clients[client]
 
@@ -27,35 +27,32 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
     handles communication
     '''
 
-    try:
-        # username handling
-        while True:
-            client.send("[SYS]: username: ")
-            username = client.recv(1024).decode().strip()
-            if username in disallowedusernames:
-                client.send("[SYS]: username disallowed.")
-                continue
-            clients[client] = username
-            break
-        print(f"{username} joined from {addr}")
-        broadcast(f"[SYS]: {username} joined")
+    # username handling
+    username = client.recv(1024).decode().strip()
+    clients[client] = username
+    print(f"{username} joined from {addr}")
+    broadcast(f"[SYS]: {username} joined")
 
+    # message handling
+    try:
         while True:
-            message = client.recv(1024)
+            username, message = client.recv(1024)
             if not message:
                 break
             broadcast(message, client)
-        print(f"{client} sent message: {message}")
+            print(f"{username} sent message: {message}")
     except Exception as e:
-        print(f"client error: {e}")
+        print(f"[SERVER] error while handling messages: {e}")
+
+    # cleanup after error
     finally:
         username = clients.pop(client, "unknown user")
         broadcast(f"{username} disconnected", )
         print(f"(from {addr})")
         client.close()
-
-    del clients[client]
+        del clients[client]
     client.close()
+    del clients[client]
     
 
 def startserver() -> None:
