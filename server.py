@@ -10,9 +10,10 @@ clients: Dict[socket.socket, str] = {}
 def broadcast(message: bytes, sender: socket.socket = "") -> None:
     for client in list(clients.keys()):
         try:
-            client.send(f"{message}".encode())
+            if client != sender:
+                client.send(f"{message}".encode())
         except Exception as e:
-            print(f"[SERVER] error sending message {e}")
+            print(f"[SERVER] error broadcasting message {e}")
             client.close()
             del clients[client]
 
