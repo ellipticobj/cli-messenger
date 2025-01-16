@@ -6,7 +6,6 @@ HOST = '0.0.0.0'
 PORT = 7171
 
 clients: Dict[socket.socket, str] = {}
-serverrunning = True
 
 def broadcast(message: bytes, sender: socket.socket = "") -> None:
     for client in list(clients.keys()):

@@ -12,10 +12,9 @@ else:
 
 
 def receive(sock: socket.socket) -> None:
-    global serverrunning
 
     try:
-        while serverrunning:
+        while True:
             try:
                 message = sock.recv(1024).decode()
             except Exception as e:
@@ -54,7 +53,7 @@ def startclient() -> None:
         listener = threading.Thread(target=receive, args=(client,), daemon=True)
         listener.start()
 
-        while serverrunning:
+        while True:
             message = input()
 
             if message.lower() == 'exit':
