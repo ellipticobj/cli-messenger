@@ -17,7 +17,7 @@ def broadcast(message: bytes, sender: socket.socket = "") -> None:
             client.close()
             del clients[client]
 
-def handleclient(client: socket.socket, addr: tuple[str, int]) -> None:
+def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
     try:
         username = client.recv(1024).decode()
         clients[client] = username
@@ -29,12 +29,23 @@ def handleclient(client: socket.socket, addr: tuple[str, int]) -> None:
     print(f"{username} joined from {addr}")
     broadcast(f"[SERVER] {username} joined")
 
+    prevmessage = ""
+    consmessage = 0
+
     while True:
+        if consmessage > 10:
+            broadcast(f"[SERVER] {username} has been disconnected due to spamming")
+            client.close()
+            del clients[client]
+
         try:
             message = client.recv(1024).decode()
+            if prevmessage == message:
+                consmessage += 1
+            prevmessage = message
             print(f"{username}: {message}")
         except Exception as e:
-            print(f"[SERVER] error receiving message")
+            print(f"[SERVER] error receiving message: {e}")
             client.close()
             del clients[client]
 

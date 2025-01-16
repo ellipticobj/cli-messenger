@@ -68,5 +68,3 @@ def startclient() -> None:
         print("[CLIENT] quitting...")
         listener.join()
         sys.exit()
-            
-startclient()
