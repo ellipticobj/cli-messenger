@@ -27,14 +27,14 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
         client.close()
         del clients[client]
 
-    broadcast(f"[SERVER] {username} joined")
+    broadcast(f"[SERVER] {username} joined\n")
 
     prevmessage = ""
     consmessage = 0
 
     while True:
         if consmessage > 10:
-            broadcast(f"[SERVER] {username} has been disconnected due to spamming")
+            broadcast(f"\n[SERVER] {username} has been disconnected due to spamming\n")
             client.close()
             del clients[client]
 
@@ -51,11 +51,11 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
             client.close()
             del clients[client]
 
-        broadcast(f"{username}: {message}", sender=client)
+        broadcast(f"{username}: {message}\n", sender=client)
 
     if client in clients:
         username = clients.pop(client, "unknown client")
-        broadcast(f"[SERVER] {username} disconnected")
+        broadcast(f"[SERVER] {username} disconnected\n")
     client.close()
     
 def startserver() -> None:
@@ -64,7 +64,7 @@ def startserver() -> None:
             server.bind((HOST, PORT))
             server.listen()
 
-            print(f"server started on {HOST}:{PORT}")
+            print(f"server started on {HOST}:{PORT}\n")
 
             while True:
                 client, addr = server.accept()
