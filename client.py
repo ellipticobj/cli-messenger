@@ -2,9 +2,6 @@ import socket
 import threading
 from utils import *
 
-HOST = input("input server ip here: ")
-PORT = int(input("input port: "))
-
 choice = input("do you want to use default server config?\nHOST=luna.hackclub.app\nPORT=7171\n[Y/n]> ").lower().strip()
 if choice == "n":
     HOST = input("input server ip here: ")
