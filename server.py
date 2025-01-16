@@ -12,7 +12,7 @@ def broadcast(message: bytes, sender: socket.socket = "") -> None:
         try:
             if client != sender:
                 client.send(f"{message}".encode())
-            print(f"{clients[client]}: {message}")
+            print(message)
         except Exception as e:
             print(f"[SERVER] error broadcasting message {e}")
             client.close()
@@ -28,6 +28,7 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
         del clients[client]
 
     broadcast(f"[SERVER] {username} joined\n")
+    print(f"{username} connected from {addr[0]}:{addr[1]}")
 
     prevmessage = ""
     consmessage = 0

@@ -1,7 +1,7 @@
 import socket, threading, sys
 from utils import *
 
-defaultconfig = input("use default config?\\nHOST=luna.hackclub.app\nPORT=7171\n[Y/n]> ").lower().strip()
+defaultconfig = input("use default config?\nHOST=luna.hackclub.app\nPORT=7171\n[Y/n]> ").lower().strip()
 if defaultconfig == "n":
     HOST = input("input server ip here: ")
     PORT = int(input("input port: "))
