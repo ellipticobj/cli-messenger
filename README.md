@@ -12,9 +12,7 @@ to run the server, run server.py
 run client.py and input the ip and port where the server is running
 
 # roadmap
-**an actual running server**
 documentation  
 better error handling  
 server broadcast on disconnect so that cilents gracefully quit  
 version codes of some sort so that cilents know when they are outdated  
-persistent prompt
