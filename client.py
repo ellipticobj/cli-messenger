@@ -9,8 +9,6 @@ else:
     HOST = 'luna.hackclub.app'
     PORT = 7171
 
-
-
 def receive(sock: socket.socket) -> None:
     try:
         while True:
@@ -68,3 +66,5 @@ def startclient() -> None:
         print("[CLIENT] quitting...")
         listener.join()
         sys.exit()
+
+startclient()
