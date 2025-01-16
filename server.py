@@ -16,7 +16,7 @@ def broadcast(message: bytes, sender: socket.socket = "") -> None:
     for client in clients:
         if client != sender:
             try:
-                client.send(f"{message}\n".encode())
+                client.send(f"PUBLIC:{message}\n".encode())
             except Exception as e:
                 print(f"[SERVER] error sending message {e}")
                 client.close()
@@ -37,7 +37,7 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
     handles communication
     '''
     try:
-        client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        # client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         # username handling
         username = client.recv(1024).decode().strip()
         clients[client] = username

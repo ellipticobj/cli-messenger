@@ -5,13 +5,13 @@ from utils import *
 HOST = input("input server ip here: ")
 PORT = int(input("input port: "))
 
-# choice = input("do you want to use default server config?\nHOST=luna.hackclub.app\nPORT=7171\n[Y/n]> ").lower().strip()
-# if choice == "n":
-#     HOST = input("input server ip here: ")
-#     PORT = int(input("input port: "))
-# else:
-#     HOST = 'luna.hackclub.app'
-#     PORT = 7171
+choice = input("do you want to use default server config?\nHOST=luna.hackclub.app\nPORT=7171\n[Y/n]> ").lower().strip()
+if choice == "n":
+    HOST = input("input server ip here: ")
+    PORT = int(input("input port: "))
+else:
+    HOST = 'luna.hackclub.app'
+    PORT = 7171
 
 serverrunning = True
 
@@ -44,27 +44,27 @@ def receivemessages(sock: socket.socket) -> None:
     consecmessage = 0
     prevmessage = ""
     try:
-        buffer = ""
+        # buffer = ""
         while serverrunning:
             try:
-                data = sock.recv(1024).decode()
-                buffer += data
-                while "\n" in buffer:
-                    message, buffer = buffer.split("\n", 1)
+                message = sock.recv(1024).decode()
+                # buffer += data
+                # while "\n" in buffer:
+                #     message, buffer = buffer.split("\n", 1)
 
                     # makes sure the message is a public message
-                    if not message.startswith("PRIVATE:"):
-                        # spam protection to prevent massive cpu usage
-                        if message == prevmessage:
-                            if consecmessage >= 20:
-                                print(f"[CLIENT] more than 20 identical messages received, looks like the server is down. ")
-                                print(f"[CLIENT] blocked incoming messages just to be safe. if you think this is an error, reconnect again :3")
-                                print(f"[CLIENT] press control+c to exit")
-                                serverrunning = False
-                            consecmessage += 1
-                        prevmessage = message
+                if message.startswith("PUBLIC:"):
+                    # spam protection to prevent massive cpu usage
+                    if message == prevmessage:
+                        if consecmessage >= 20:
+                            print(f"[CLIENT] more than 20 identical messages received, looks like the server is down. ")
+                            print(f"[CLIENT] blocked incoming messages just to be safe. if you think this is an error, reconnect again :3")
+                            print(f"[CLIENT] press control+c to exit")
+                            serverrunning = False
+                        consecmessage += 1
+                    prevmessage = message
 
-                        print(f"\n{message}\n", end="")
+                    print(f"\n{message[8:]}\n", end="")
             except Exception as e:
                 print(f"[CLIENT] error receiving message {e}")
                 break
