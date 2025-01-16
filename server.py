@@ -12,6 +12,7 @@ def broadcast(message: bytes, sender: socket.socket = "") -> None:
         try:
             if client != sender:
                 client.send(f"{message}".encode())
+            print(f"{clients[client]}: {message}")
         except Exception as e:
             print(f"[SERVER] error broadcasting message {e}")
             client.close()
@@ -26,7 +27,6 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
         client.close()
         del clients[client]
 
-    print(f"{username} joined from {addr}")
     broadcast(f"[SERVER] {username} joined")
 
     prevmessage = ""
@@ -40,6 +40,8 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
 
         try:
             message = client.recv(1024).decode()
+            if not message:
+                break
             if prevmessage == message:
                 consmessage += 1
             prevmessage = message
@@ -51,6 +53,10 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
 
         broadcast(f"{username}: {message}", sender=client)
 
+    if client in clients:
+        username = clients.pop(client, "unknown client")
+        broadcast(f"[SERVER] {username} disconnected")
+    client.close()
     
 def startserver() -> None:
     try:
@@ -67,7 +73,6 @@ def startserver() -> None:
         print(f"shutdown starting")
 
         for client in list(clients.keys()):
-            print(f"informing client that server is shutting down")
             broadcast(f"[SERVER] shutting down...")
             print(f"closing connection with {clients[client]}")
             client.close()

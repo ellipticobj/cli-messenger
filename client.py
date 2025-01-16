@@ -54,6 +54,10 @@ def startclient() -> None:
             message = input()
 
             if message.lower() == 'exit':
+                try:
+                    client.send(f"{username} left the chat".encode())
+                except Exception as e:
+                    print(f"[CLIENT] error disconnecting: {e}")
                 break
 
             try:
@@ -65,6 +69,5 @@ def startclient() -> None:
         # exit sequence
         print("[CLIENT] quitting...")
         listener.join()
-        sys.exit()
 
 startclient()
