@@ -32,6 +32,7 @@ def handleclient(client: socket.socket, addr: tuple[str, int]) -> None:
     while True:
         try:
             message = client.recv(1024).decode()
+            print(f"{username}: {message}")
         except Exception as e:
             print(f"[SERVER] error receiving message")
             client.close()

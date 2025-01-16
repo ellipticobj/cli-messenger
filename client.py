@@ -12,7 +12,6 @@ else:
 
 
 def receive(sock: socket.socket) -> None:
-
     try:
         while True:
             try:
