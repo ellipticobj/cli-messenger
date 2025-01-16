@@ -60,9 +60,9 @@ def startclient() -> None:
                 break
 
             try:
-                client.send(f"{message}").encode()
+                client.send(f"{message}".encode())
             except Exception as e:
-                print(f"[CLIENT] error sending message {e}")
+                print(f"[CLIENT] error sending message: {e}")
                 break
 
         # exit sequence
