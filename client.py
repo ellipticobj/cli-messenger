@@ -32,7 +32,7 @@ def startclient() -> None:
 
         while True:
             username = input("[CLIENT] username: ").strip()
-            if username in disallowedusernames:
+            if not username:
                 print(f"[CLIENT] username {username} disallowed.")
                 continue
             break
