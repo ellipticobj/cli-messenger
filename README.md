@@ -37,6 +37,6 @@ if you self hosted, or are joining a self hosted server, type `n` and hit enter,
 
 # roadmap
 documentation  
-a persistent prompt  
+a persistent prompt so that there is a `you:` before messages you send and others' messages wont interrupt yours  
 better error handling  
 version codes of some sort so that cilents know when they are outdated  
