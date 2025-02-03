@@ -56,3 +56,41 @@ class Client:
             self.display(f"connection failed, error occured.\n{e}")
             self.running = False
             return False
+
+    def receiveloop(self):
+        while self.running:
+            try:
+                message = self.client.recv(1024).decode()
+                if not message:
+                    self.running = False
+                    break
+
+                self.display(message)
+            except Exception as e:
+                self.display(f"error occured: {e}\n exiting...")
+                self.running = False
+                break
+
+    def inputloop(self):
+        buf = ''
+        while self.running:
+            try:
+                key = self.inputwin.getch()
+                if key == curses.KEY_ENTER or key in [10, 13]:
+                    if buf.strip():
+                        self.client.send(buf.encode())
+                        buf = ''
+                        self.inputwin.clear()
+                        self.inputwin.refresh()
+                    elif key == curses.KEY_BACKSPACE or key == 127:
+                        buf = buf[:-1]
+                        self.inputwin.clear()
+                        self.inputwin.addstr(0, 0, buf)
+                        self.inputwin.reflesh()
+                    elif 0 <= key < 256:
+                        buf += chr(key)
+                        self.inputwin.addstr(0, 0, buf)
+                        self.inputwin.refresh()
+            except Exception as e:
+                # pass
+                self.display(f"error occured: {e}")
