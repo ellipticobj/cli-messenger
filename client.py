@@ -68,6 +68,8 @@ class Client:
         '''
         self.getusrname()
 
+        self.display("connecting...")
+
         try:
             # attempts to connect to server
             # timeout set to 5 seconds
@@ -124,7 +126,7 @@ class Client:
                             self.client.send(buf.encode())
                             buf = ''
                         except socket.timeout:
-                            self.display("server has not responded for 5 seconds. disconnecting")
+                            self.display("server not responding... disconnecting...")
                             self.running = False
                             break
                         except Exception as e:
@@ -157,11 +159,11 @@ class Client:
         self.inputloop()
         self.client.close()
         curses.endwin()
-        print("disconnected")
 
 def main(stdscr):
     client = Client(stdscr)
     client.run()
+    print("disconnected")
 
 if __name__ == "__main__":
     wrapper(main)
