@@ -6,6 +6,9 @@ from datetime import datetime
 
 class Client:
     def __init__(self, stdscr):
+        '''
+        :3
+        '''
         self.stdscr = stdscr
         self.running = True
         self.host = "luna.hackclub.app"
@@ -15,6 +18,9 @@ class Client:
         self.setupui()
 
     def setupui(self):
+        '''
+        initializes the windows for the chat and input for persistant prompts
+        '''
         curses.curs_set(1)
         self.stdscr.nodelay(1)
         self.stdscr.timeout(100)
@@ -26,6 +32,9 @@ class Client:
         self.chatwin.scrollok(True)
 
     def display(self, message):
+        '''
+        prints a message
+        '''
         try:
             timestamp = datetime.now().strftime("%H:%M")
             self.chatwin.addstr(f"[{timestamp}] {message}\n")
@@ -34,6 +43,9 @@ class Client:
             pass
 
     def getusrname(self):
+        '''
+        sets user username
+        '''
         prompt = "> "
         usrnamewin = curses.newwin(3, 50, 5, 5)
 
@@ -44,21 +56,30 @@ class Client:
         username = usrnamewin.getstr(1, len(prompt), 20).decode()
         curses.noecho()
 
+        usrnamewin.erase()
+        self.stdscr.touchwin()
+        self.stdscr.refresh()
+
         self.username = username.strip() if username.strip() else "anon"
-        self.stdscr.clear()
 
     def connect(self):
+        '''
+        attempts to connect to server with username
+        '''
         self.getusrname()
 
         try:
+            # attempts to connect to server
+            # timeout set to 5 seconds
+            self.client.settimeout(5)
             self.client.connect((self.host, self.port))
             self.client.send(self.username.encode())
-            response = self.client.recv(1024).decode()
 
-            if response == "connection rejected":
-                self.display("connect rejected by server")
-                self.running = False
-                return False
+            response = self.client.recv(1024).decode()
+            if response.lower() == "connection rejected":
+                raise ConnectionError("connection rejected")
+
+            self.client.settimeout(None)
             return True
 
         except Exception as e:
@@ -67,12 +88,14 @@ class Client:
             return False
 
     def receiveloop(self):
+        '''
+        receive messages from server
+        '''
         while self.running:
             try:
                 message = self.client.recv(1024).decode()
                 if not message:
-                    self.running = False
-                    break
+                    raise ConnectionError("server disconnection")
 
                 self.display(message)
             except Exception as e:
@@ -81,6 +104,9 @@ class Client:
                 break
 
     def inputloop(self):
+        '''
+        receive user input (messages)
+        '''
         buf = ''
 
         while self.running:
@@ -93,8 +119,21 @@ class Client:
 
                 if key == curses.KEY_ENTER or key in [10, 13]:
                     if buf.strip():
-                        self.client.send(buf.encode())
-                        buf = ''
+                        try:
+                            self.client.settimeout(5)
+                            self.client.send(buf.encode())
+                            buf = ''
+                        except socket.timeout:
+                            self.display("server has not responded for 5 seconds. disconnecting")
+                            self.running = False
+                            break
+                        except Exception as e:
+                            self.display(f"error sending message: {e}")
+                            self.running = False
+                            break
+                        finally:
+                            self.client.settimeout(None)
+
                 elif key == curses.KEY_BACKSPACE or key == 127:
                     buf = buf[:-1]
                 elif 0 <= key < 256:
@@ -103,8 +142,12 @@ class Client:
             except Exception as e:
                 # pass
                 self.display(f"error occured in inputloop: {e}")
+                self.running = False
 
     def run(self):
+        '''
+        runs the app (duh)
+        '''
         if not self.connect():
             return
 
@@ -113,12 +156,12 @@ class Client:
 
         self.inputloop()
         self.client.close()
+        curses.endwin()
+        print("disconnected")
 
 def main(stdscr):
     client = Client(stdscr)
     client.run()
-    curses.endwin()
-    print(f"disconnected from server")
 
 if __name__ == "__main__":
     wrapper(main)
