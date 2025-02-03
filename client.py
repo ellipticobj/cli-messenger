@@ -12,7 +12,7 @@ class Client:
         self.stdscr = stdscr
         self.running = True
         self.host = "luna.hackclub.app"
-        self.port = 7172
+        self.port = 7171
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.username = "anonymous"
         self.setupui()

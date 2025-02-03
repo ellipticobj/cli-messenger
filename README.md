@@ -60,6 +60,10 @@ press enter if you want to join the default server (might not be online)
 
 if you self hosted, or are joining a self hosted server, type `n` and hit enter, then enter the server ip and port when prompted to.
 
+# development
+client app
+server app
+
 # roadmap
 documentation
 a persistent prompt so that there is a `you:` before messages you send and others' messages wont interrupt yours
