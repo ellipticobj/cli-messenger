@@ -1,5 +1,5 @@
 # cli-messenger
-rewrite in progress [here](https://github.com/ellipticobj/cli-messenger/tree/v2/)
+rewrite in progress [here](https://github.com/ellipticobj/cli-messenger/tree/v2/)  
 simple cli messenger app made with python
 
 # running
