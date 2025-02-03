@@ -1,6 +1,6 @@
 # cli-messenger
 
-# THIS IS STILL A WORK IN PROGRESS. A WORKING VERSION CAN BE FONUD [HERE](https://github.com/ellipticobj/cli-messenger/tree/main/)
+# THIS IS STILL A WORK IN PROGRESS. A WORKING VERSION CAN BE FOUND [HERE](https://github.com/ellipticobj/cli-messenger/tree/main/)
 
 simple cli messenger app made with python
 
