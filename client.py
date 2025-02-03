@@ -20,21 +20,24 @@ class Client:
 
         self.rows, self.cols = self.stdscr.getmaxyx()
 
-        self.inputwin = curses.newwin(1, self.cols, self,rows-1, 0)
+        self.inputwin = curses.newwin(1, self.cols, self.rows-1, 0)
         self.chatwin = curses.newwin(self.rows-1, self.cols, 0, 0)
         self.chatwin.scrollok(True)
 
-    def display(self):
+    def display(self, message):
         timestamp = datetime.now().strftime("%H:%M")
         self.chatwin.addstr(f"[{timestamp}] {message}\n")
         self.chatwin.refresh()
 
     def getusrname(self):
-        self.stdscr.addstr(0, 0, "enter username: ")
+        prompt = "> "
+        self.stdscr.addstr(0, 0, f"enter username (leave empty for anon)\n{prompt}")
         self.stdscr.refresh()
         curses.echo()
 
-        self.username = self.stdscr.getstr(0, 15, 20).decode()
+        username = self.stdscr.getstr(1, len(prompt), 0).decode()
+
+        self.username = username.strip() if username.strip() else "anon"
         curses.noecho()
         self.stdscr.clear()
 
@@ -86,7 +89,7 @@ class Client:
                         buf = buf[:-1]
                         self.inputwin.clear()
                         self.inputwin.addstr(0, 0, buf)
-                        self.inputwin.reflesh()
+                        self.inputwin.refresh()
                     elif 0 <= key < 256:
                         buf += chr(key)
                         self.inputwin.addstr(0, 0, buf)
@@ -94,3 +97,22 @@ class Client:
             except Exception as e:
                 # pass
                 self.display(f"error occured: {e}")
+
+    def run(self):
+        if not self.connect():
+            return
+
+        receivethread = threading.Thread(target=self.receiveloop, daemon=True)
+        receivethread.start()
+
+        self.inputloop()
+        self.client.close()
+
+def main(stdscr):
+    client = Client(stdscr)
+    client.run()
+    curses.endwin()
+    print(f"disconnected from server")
+
+if __name__ == "__main__":
+    wrapper(main)
