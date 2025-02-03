@@ -4,6 +4,28 @@
 
 simple cli messenger app made with python
 
+# quickstart
+
+git clone this repo:
+```bash
+git clone git@github.com:https://github.com/ellipticobj/cli-messenger.git
+```
+
+cd into the directory:
+```bash
+cd cli-messenger
+```
+
+install requirements:
+```bash
+pip3 install -r requirements.txt
+```
+
+run client.py
+```
+python3 client.py
+```
+
 # running
 git clone this repo
 

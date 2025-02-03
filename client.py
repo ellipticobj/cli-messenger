@@ -12,7 +12,7 @@ class Client:
         self.stdscr = stdscr
         self.running = True
         self.host = "luna.hackclub.app"
-        self.port = 7171
+        self.port = 7172
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.username = "anonymous"
         self.setupui()
@@ -30,6 +30,33 @@ class Client:
         self.inputwin = curses.newwin(1, self.cols, self.rows-1, 0)
         self.chatwin = curses.newwin(self.rows-1, self.cols, 0, 0)
         self.chatwin.scrollok(True)
+
+    def exitscreen(self, message):
+        rows, cols = self.stdscr.getmaxyx()
+        width = min(60, cols-4)
+        height = 6
+
+        win = curses.newwin(height, width, max(0, rows//2-2), max(0, (cols-width)==2))
+
+        try:
+            messages = message.split('\n')[:2]
+            for i, line in enumerate(messages):
+                trunc = line[:width-2]
+                win.addstr(i, 0, trunc.center(width))
+
+            prompt = "[RETURN] "
+            win.addstr(height-1, (width-len(prompt))//2, prompt)
+            win.refresh()
+
+            while True:
+                key = self.stdscr.getch()
+                if key:
+                    break
+        except curses.error:
+            pass
+        finally:
+            win.erase()
+            self.stdscr.refresh()
 
     def display(self, message):
         '''
@@ -79,13 +106,15 @@ class Client:
 
             response = self.client.recv(1024).decode()
             if response.lower() == "connection rejected":
-                raise ConnectionError("connection rejected")
+                self.exitscreen("connection rejected by server")
+                self.running = False
+                return False
 
             self.client.settimeout(None)
             return True
 
         except Exception as e:
-            self.display(f"connection failed, error occured.\n{e}")
+            self.exitscreen(f"connection failed\n{str(e)}")
             self.running = False
             return False
 
