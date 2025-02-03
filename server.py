@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 from utils import *
 
 HOST = '0.0.0.0'
-PORT = 7171
+PORT = 7172
 
 clients: Dict[socket.socket, str] = {}
 
@@ -58,7 +58,7 @@ def handleclient(client: socket.socket, addr: Tuple[str, int]) -> None:
         username = clients.pop(client, "unknown client")
         broadcast(f"[SERVER] {username} disconnected\n")
     client.close()
-    
+
 def startserver() -> None:
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:

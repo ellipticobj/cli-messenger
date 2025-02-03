@@ -6,7 +6,7 @@ if defaultconfig == "n":
     PORT = int(input("input port: "))
 else:
     HOST = 'luna.hackclub.app'
-    PORT = 7171
+    PORT = 7172
 
 def receive(sock: socket.socket) -> None:
     try:
@@ -36,7 +36,7 @@ def startclient() -> None:
                 print(f"[CLIENT] username {username} disallowed.")
                 continue
             break
-        
+
         try:
             client.send(username.encode())
         except:
