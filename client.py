@@ -82,6 +82,7 @@ class Client:
 
     def inputloop(self):
         buf = ''
+
         while self.running:
             try:
                 self.inputwin.clear()
@@ -94,17 +95,11 @@ class Client:
                     if buf.strip():
                         self.client.send(buf.encode())
                         buf = ''
-                        self.inputwin.clear()
-                        self.inputwin.refresh()
-                    elif key == curses.KEY_BACKSPACE or key == 127:
-                        buf = buf[:-1]
-                        self.inputwin.clear()
-                        self.inputwin.addstr(0, 0, buf)
-                        self.inputwin.refresh()
-                    elif 0 <= key < 256:
-                        buf += chr(key)
-                        self.inputwin.addstr(0, 0, buf)
-                        self.inputwin.refresh()
+                elif key == curses.KEY_BACKSPACE or key == 127:
+                    buf = buf[:-1]
+                elif 0 <= key < 256:
+                    buf += chr(key)
+
             except Exception as e:
                 # pass
                 self.display(f"error occured in inputloop: {e}")
