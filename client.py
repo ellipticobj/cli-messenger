@@ -12,6 +12,7 @@ class Client:
         self.port = 7171
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.username = "anonymous"
+        self.setupui()
 
     def setupui(self):
         curses.curs_set(1)
@@ -25,20 +26,25 @@ class Client:
         self.chatwin.scrollok(True)
 
     def display(self, message):
-        timestamp = datetime.now().strftime("%H:%M")
-        self.chatwin.addstr(f"[{timestamp}] {message}\n")
-        self.chatwin.refresh()
+        try:
+            timestamp = datetime.now().strftime("%H:%M")
+            self.chatwin.addstr(f"[{timestamp}] {message}\n")
+            self.chatwin.refresh()
+        except:
+            pass
 
     def getusrname(self):
         prompt = "> "
-        self.stdscr.addstr(0, 0, f"enter username (leave empty for anon)\n{prompt}")
-        self.stdscr.refresh()
-        curses.echo()
+        usrnamewin = curses.newwin(3, 50, 5, 5)
 
-        username = self.stdscr.getstr(1, len(prompt), 0).decode()
+        usrnamewin.addstr(0, 0, f"enter username (leave empty for anon)\n{prompt}")
+        usrnamewin.refresh()
+
+        curses.echo()
+        username = usrnamewin.getstr(1, len(prompt), 20).decode()
+        curses.noecho()
 
         self.username = username.strip() if username.strip() else "anon"
-        curses.noecho()
         self.stdscr.clear()
 
     def connect(self):
@@ -70,7 +76,7 @@ class Client:
 
                 self.display(message)
             except Exception as e:
-                self.display(f"error occured: {e}\n exiting...")
+                self.display(f"error occured in receiveloop: {e}\n exiting...")
                 self.running = False
                 break
 
@@ -78,7 +84,12 @@ class Client:
         buf = ''
         while self.running:
             try:
+                self.inputwin.clear()
+                self.inputwin.addstr(0, 0, "> " + buf)
+                self.inputwin.refresh()
+
                 key = self.inputwin.getch()
+
                 if key == curses.KEY_ENTER or key in [10, 13]:
                     if buf.strip():
                         self.client.send(buf.encode())
@@ -96,7 +107,7 @@ class Client:
                         self.inputwin.refresh()
             except Exception as e:
                 # pass
-                self.display(f"error occured: {e}")
+                self.display(f"error occured in inputloop: {e}")
 
     def run(self):
         if not self.connect():
