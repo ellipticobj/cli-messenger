@@ -14,7 +14,7 @@ class Client:
         self.host = "luna.hackclub.app"
         self.port = 7171
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.username = "anonymous"
+        self.username = ""
         self.setupui()
 
     def setupui(self):
@@ -44,13 +44,13 @@ class Client:
                 trunc = line[:width-2]
                 win.addstr(i, 0, trunc.center(width))
 
-            prompt = "[RETURN] "
+            prompt = "[RETURN to exit] "
             win.addstr(height-1, (width-len(prompt))//2, prompt)
             win.refresh()
 
             while True:
                 key = self.stdscr.getch()
-                if key:
+                if key == curses.KEY_ENTER or key in [10, 13]:
                     break
         except curses.error:
             pass
@@ -65,6 +65,7 @@ class Client:
         try:
             timestamp = datetime.now().strftime("%H:%M")
             self.chatwin.addstr(f"[{timestamp}] {message}\n")
+            print(f"[{timestamp}] {message}")
             self.chatwin.refresh()
         except:
             pass
@@ -73,14 +74,18 @@ class Client:
         '''
         sets user username
         '''
+        self.stdscr.clear()
+        self.stdscr.refresh()
+
         prompt = "> "
+        scrtext = f"enter username (leave empty for anon)\n{prompt}"
         usrnamewin = curses.newwin(3, 50, 5, 5)
 
-        usrnamewin.addstr(0, 0, f"enter username (leave empty for anon)\n{prompt}")
+        usrnamewin.addstr(0, 0, scrtext)
         usrnamewin.refresh()
 
         curses.echo()
-        username = usrnamewin.getstr(1, len(prompt), 20).decode()
+        username = usrnamewin.getstr(scrtext.count('\n'), len(prompt), 20).decode()
         curses.noecho()
 
         usrnamewin.erase()
@@ -88,11 +93,100 @@ class Client:
         self.stdscr.refresh()
 
         self.username = username.strip() if username.strip() else "anon"
+        print(f"joined with username: {self.username}")
+
+    def usecustomserverprompt(self):
+        '''
+        asks user if they want to connect to the default server
+        '''
+        self.stdscr.clear()
+        self.stdscr.refresh()
+
+        prompt = "(Y/n)> "
+        scrtext = f"do you want to connect to the default server?\nip: luna.hackclub.app\nport: 7171\n{prompt}"
+        win = curses.newwin(6, 50, 5, 5)
+
+        win.addstr(0, 0, scrtext)
+        win.refresh()
+
+        curses.echo()
+        match win.getstr(scrtext.count('\n'), len(prompt), 20).decode().strip().lower():
+            case "n":
+                usedef = False
+
+            case _:
+                usedef = True
+        curses.noecho()
+        win.erase()
+
+        self.stdscr.touchwin()
+        self.stdscr.refresh()
+
+        return usedef
+
+    def getcustomserver(self):
+        '''
+        gets user's server config
+        '''
+        self.stdscr.clear()
+        self.stdscr.refresh()
+
+        prompt = "> "
+        hostscrtext = f"host {prompt}"
+        portscrtext = f"port {prompt}"
+        win = curses.newwin(6, 50, 5, 5)
+
+        win.addstr(0, 0, hostscrtext)
+        win.refresh()
+
+        curses.echo()
+        self.host = win.getstr(hostscrtext.count('\n'), len(prompt+hostscrtext), 20).decode().strip().lower()
+        curses.noecho()
+
+        win.erase()
+
+
+        win.addstr(0, 0, f"host > {self.host}")
+        win.addstr(1, 0, portscrtext)
+        win.refresh()
+
+        curses.echo()
+        self.port = win.getstr(portscrtext.count('\n')+1, len(prompt+portscrtext), 20).decode().strip().lower()
+        curses.noecho()
+
+        win.erase()
+
+        win.addstr(1, 0, f"host > {self.host}")
+        win.addstr(2, 0, f"port > {self.port}")
+        win.addstr(4, 0, "[RETURN to continue]")
+        win.refresh()
+
+        while True:
+            key = self.stdscr.getch()
+            if key == curses.KEY_ENTER or key in [10, 13]:
+                break
+
+        win.erase()
+        self.stdscr.touchwin()
+        self.stdscr.refresh()
 
     def connect(self):
         '''
         attempts to connect to server with username
         '''
+        usedefault = self.usecustomserverprompt()
+
+        if not usedefault:
+            self.getcustomserver()
+
+            # LOGGING
+            # print("connected using custom config:")
+        else:
+            # print("connected using default config:")
+            pass
+        print(f"  HOST: {self.host}")
+        print(f"  PORT: {self.port}")
+
         self.getusrname()
 
         self.display("connecting...")
@@ -134,7 +228,7 @@ class Client:
                 self.running = False
                 break
 
-    def inputloop(self):
+    def inputloop(self, prompt = "> "):
         '''
         receive user input (messages)
         '''
@@ -143,7 +237,7 @@ class Client:
         while self.running:
             try:
                 self.inputwin.clear()
-                self.inputwin.addstr(0, 0, "> " + buf)
+                self.inputwin.addstr(0, 0, prompt + buf)
                 self.inputwin.refresh()
 
                 key = self.inputwin.getch()
@@ -153,6 +247,7 @@ class Client:
                         try:
                             self.client.settimeout(5)
                             self.client.send(buf.encode())
+                            print()
                             buf = ''
                         except socket.timeout:
                             self.display("server not responding... disconnecting...")
@@ -190,9 +285,15 @@ class Client:
         curses.endwin()
 
 def main(stdscr):
-    client = Client(stdscr)
-    client.run()
-    print("disconnected")
+    try:
+        client = Client(stdscr)
+        client.run()
+        print("disconnected")
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        print(f"error: {e}")
 
 if __name__ == "__main__":
     wrapper(main)
+    print("disconnected")
