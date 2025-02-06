@@ -67,7 +67,6 @@ class Client:
         try:
             timestamp = datetime.now().strftime("%H:%M")
             self.chatwin.addstr(f"[{timestamp}] {message}\n")
-            # print(f"[{timestamp}] {message}")
             self.chatwin.refresh()
         except:
             pass
@@ -164,9 +163,11 @@ class Client:
 
             try:
                 self.port = int(self.port)
+                if not (1 <= self.port <=65535):
+                    raise ValueError
             except:
                 self.port = None
-                win.addstr(3, 0, "port needs to be an integer")
+                win.addstr(3, 0, "port needs to be an integer between 1 and 65535")
                 continue
 
         win.addstr(0, 0, f"host >   {self.host}")
@@ -220,13 +221,16 @@ class Client:
             return True
         except ConnectionRefusedError:
             self.exitscreen("connection refused\nserver may be offline")
+            self.running = False
         except socket.timeout:
             self.exitscreen("connection timed out\nserver not responding")
+            self.running = False
         except Exception as e:
             self.exitscreen(f"connection failed\nerror: {str(e)}\nreport this to https://github.com/ellipticobj/cli-messenger/issues/new")
-        finally:
             self.running = False
-            return False
+        finally:
+            if self.running == False:
+                return False
 
     def receiveloop(self):
         '''
@@ -302,22 +306,26 @@ class Client:
 
 def main(stdscr):
     args = sys.argv[1:]
-    if args[0] == "-d" or args[0] == "--debug":
-        client = Client(stdscr, debug=True)
-    else:
-        client = Client(stdscr, debug=False)
-    client = Client(stdscr)
+    debug = False
+    if args:
+        if (args[0] in ["-d", "--debug"]):
+            debug = True
+
+    client = Client(stdscr, debug=debug)
     client.run()
+
     while client.running:
         try:
-            print("running")
-        except KeyboardInterrupt:
-            break
+            curses.napms(500) # instead of time.sleep because sigma
         except Exception as e:
             return e
     return "disconnected"
 
 if __name__ == "__main__":
-    error = wrapper(main)
+    try:
+        error = wrapper(main)
+    except KeyboardInterrupt:
+        pass # TODO
+
     print(error)
     print("program quit")

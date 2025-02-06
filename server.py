@@ -133,6 +133,8 @@ class Server:
                 client.send(message.encode())
             except:
                 del self.clients[client]
+                self.broadcast(client)
+                # self.broadcast(f"{username} has left the chat!")
 
     def shutdown(self):
         '''shutting down server'''
