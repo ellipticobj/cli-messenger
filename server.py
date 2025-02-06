@@ -81,12 +81,15 @@ class Server:
                 if not message:
                     break
                 self.procmessage(username, message)
-        except:
-            pass
+        except Exception as e:
+            self.log(f"error handling client {username}: {e}")
 
-        del self.clients[clsock]
-        self.broadcast(f"{username} has left the chat!")
-        clsock.close()
+        with self.lock:
+            if clsock in self.clients:
+                del self.clients[clsock]
+                self.broadcast(f"{username} has left the chat!")
+                self.log(f"{username} disconnected")
+            clsock.close()
 
     def procmessage(self, username, message):
         '''handles messages'''
@@ -129,12 +132,12 @@ class Server:
     def broadcast(self, message):
         for client in self.clients:
             try:
-                self.log(message)
                 client.send(message.encode())
             except:
                 del self.clients[client]
-                self.broadcast(client)
-                # self.broadcast(f"{username} has left the chat!")
+                self.broadcast(f"{self.clients[client]} has left the chat!")
+                self.log(f"{self.clients[client]} disconnected")
+                client.close()
 
     def shutdown(self):
         '''shutting down server'''

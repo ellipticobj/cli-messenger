@@ -68,6 +68,7 @@ class Client:
             timestamp = datetime.now().strftime("%H:%M")
             self.chatwin.addstr(f"[{timestamp}] {message}\n")
             self.chatwin.refresh()
+            self.inputwin.refresh()
         except:
             pass
 
@@ -267,14 +268,9 @@ class Client:
                         try:
                             self.client.settimeout(5)
                             self.client.send(buf.encode())
-                            print()
                             buf = ''
                         except socket.timeout:
                             self.display("server not responding... disconnecting...")
-                            self.running = False
-                            break
-                        except Exception as e:
-                            self.display(f"error sending message: {e}")
                             self.running = False
                             break
                         finally:
@@ -286,7 +282,6 @@ class Client:
                     buf += chr(key)
 
             except Exception as e:
-                # pass
                 self.display(f"error occured in inputloop: {e}")
                 self.running = False
 
@@ -322,6 +317,7 @@ def main(stdscr):
     return "disconnected"
 
 if __name__ == "__main__":
+    error = ""
     try:
         error = wrapper(main)
     except KeyboardInterrupt:
