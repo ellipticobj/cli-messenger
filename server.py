@@ -40,12 +40,12 @@ class Server:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         entr = f"[{now}] {message}"
         print(entr)
-        with open(logfile, "w") as file:
+        with open(logfile, "a") as file:
             file.write(f"{entr}\n")
 
     def handleclient(self, clsock):
         '''handles client connection'''
-        username = self.server.recv(1024).decode()
+        username = clsock.recv(1024).decode()
 
         if self.validate(username):
             self.clients[clsock] = username
@@ -114,17 +114,25 @@ class Server:
             except Exception as e:
                 self.log(f"failed to send message to {client} due to {e}")
 
-def run():
-    server = Server()
+    def shutdown(self):
+        # TODO
+        pass
 
-    acceptthread = threading.Thread(target = lambda: [server.handleclient(client) for client in iter(lambda: server.server.accept()[0], None)], daemon=True)
-    acceptthread.start()
+def run():
+    try:
+        server = Server()
+
+        acceptthread = threading.Thread(target = lambda: [server.handleclient(client) for client in iter(lambda: server.server.accept()[0], None)], daemon=True)
+        acceptthread.start()
+    except KeyboardInterrupt:
+        print("quitting server")
+    finally:
+        server.shutdown()
 
 
 if __name__ == "__main__":
-    try:
-        run()
-    except KeyboardInterrupt:
-        print("quitting server")
+    print("starting server")
+    run()
+
 
 print("server quit")
