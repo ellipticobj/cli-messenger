@@ -6,7 +6,7 @@ simple cli messenger app made with python
 
 git clone this repo:
 ```bash
-git clone git@github.com:https://github.com/ellipticobj/cli-messenger.git
+git clone https://github.com/ellipticobj/cli-messenger.git
 ```
 
 cd into the directory:
