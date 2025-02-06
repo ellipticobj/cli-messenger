@@ -65,7 +65,7 @@ class Client:
         try:
             timestamp = datetime.now().strftime("%H:%M")
             self.chatwin.addstr(f"[{timestamp}] {message}\n")
-            print(f"[{timestamp}] {message}")
+            # print(f"[{timestamp}] {message}")
             self.chatwin.refresh()
         except:
             pass
@@ -93,7 +93,7 @@ class Client:
         self.stdscr.refresh()
 
         self.username = username.strip() if username.strip() else "anon"
-        print(f"joined with username: {self.username}")
+        self.display(f"joined with username: {self.username}")
 
     def usecustomserverprompt(self):
         '''
@@ -134,31 +134,30 @@ class Client:
         prompt = "> "
         hostscrtext = f"host {prompt}"
         portscrtext = f"port {prompt}"
+        self.port = None
+        self.host = None
         win = curses.newwin(6, 50, 5, 5)
 
-        win.addstr(0, 0, hostscrtext)
-        win.refresh()
+        while not self.host:
+            win.addstr(0, 0, hostscrtext)
+            win.refresh()
+            curses.echo()
+            self.host = win.getstr(hostscrtext.count('\n'), len(prompt+hostscrtext), 20).decode().strip().lower()
+            curses.noecho()
+            win.erase()
 
-        curses.echo()
-        self.host = win.getstr(hostscrtext.count('\n'), len(prompt+hostscrtext), 20).decode().strip().lower()
-        curses.noecho()
+        while not self.port:
+            win.addstr(0, 0, f"host >   {self.host}")
+            win.addstr(1, 0, portscrtext)
+            win.refresh()
+            curses.echo()
+            self.port = win.getstr(portscrtext.count('\n')+1, len(prompt+portscrtext), 20).decode().strip().lower()
+            curses.noecho()
+            win.erase()
 
-        win.erase()
-
-
-        win.addstr(0, 0, f"host > {self.host}")
-        win.addstr(1, 0, portscrtext)
-        win.refresh()
-
-        curses.echo()
-        self.port = win.getstr(portscrtext.count('\n')+1, len(prompt+portscrtext), 20).decode().strip().lower()
-        curses.noecho()
-
-        win.erase()
-
-        win.addstr(1, 0, f"host > {self.host}")
-        win.addstr(2, 0, f"port > {self.port}")
-        win.addstr(4, 0, "[RETURN to continue]")
+        win.addstr(0, 0, f"host >   {self.host}")
+        win.addstr(1, 0, f"port >   {self.port}")
+        win.addstr(3, 0, "[RETURN to continue]")
         win.refresh()
 
         while True:
@@ -179,11 +178,6 @@ class Client:
         if not usedefault:
             self.getcustomserver()
 
-            # LOGGING
-            # print("connected using custom config:")
-        else:
-            # print("connected using default config:")
-            pass
         print(f"  HOST: {self.host}")
         print(f"  PORT: {self.port}")
 
@@ -192,8 +186,8 @@ class Client:
         self.display("connecting...")
 
         try:
-            # attempts to connect to server
-            # timeout set to 5 seconds
+        # attempts to connect to server
+        # timeout set to 5 seconds
             self.client.settimeout(5)
             self.client.connect((self.host, self.port))
             self.client.send(self.username.encode())
@@ -206,9 +200,13 @@ class Client:
 
             self.client.settimeout(None)
             return True
-
+        except ConnectionRefusedError:
+            self.exitscreen("connection refused\nserver may be offline")
+        except socket.timeout:
+            self.exitscreen("connection timed out\nserver not responding")
         except Exception as e:
-            self.exitscreen(f"connection failed\n{str(e)}")
+            self.exitscreen(f"connection failed\nerror: {str(e)}\nreport this to https://github.com/ellipticobj/cli-messenger/issues/new")
+        finally:
             self.running = False
             return False
 
@@ -296,4 +294,4 @@ def main(stdscr):
 
 if __name__ == "__main__":
     wrapper(main)
-    print("disconnected")
+    print("quit")

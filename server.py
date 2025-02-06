@@ -2,6 +2,7 @@ import socket
 import threading
 from datetime import datetime
 import sys
+import time
 
 class Server:
     def __init__(self, host='0.0.0.0', port=7171):
@@ -12,6 +13,7 @@ class Server:
 
         self.clients = {} # dictionary of socket: username
         self.running = True
+        self.lock = threading.Lock()
 
         self.whitelist = {} # set of whitelisted users
         self.blacklist = {} # set
@@ -34,22 +36,37 @@ class Server:
         self.server.listen()
         self.log(f"server listening at {self.host}:{self.port}")
 
-    def log(self, message):
+    def log(self, message, end='\n'):
         '''prints a log + stores it in a log file'''
         logfile = "server.log"
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         entr = f"[{now}] {message}"
-        print(entr)
+        print(entr, end=end)
         with open(logfile, "a") as file:
             file.write(f"{entr}\n")
 
-    def handleclient(self, clsock):
+    def acceptclient(self):
+        while self.running:
+            try:
+                client, addr = self.server.accept()
+                clientthread = threading.Thread(
+                    target=self.handleclient,
+                    args=(client,addr),
+                    daemon=True
+                )
+                clientthread.start()
+            except OSError:
+                break
+
+    def handleclient(self, clsock, claddr):
         '''handles client connection'''
         username = clsock.recv(1024).decode()
 
         if self.validate(username):
-            self.clients[clsock] = username
-            self.broadcast(f"{username} joined")
+            with self.lock:
+                self.clients[clsock] = username
+                self.broadcast(f"{username} joined")
+                self.log(f"{username} joined from {claddr}")
         else:
             clsock.send("connection rejected")
             clsock.close()
@@ -89,19 +106,18 @@ class Server:
                     words[i] = "*" * len(word)
         return " ".join(words)
 
-    def validate(self, username):
-        # TODO: change username check to ip check
+    def validate(self, addr):
         '''
         checks if client's ip is black/whitelisted
         returns true if user is allowed to connect, falso if disallowed
         '''
         if self.whitelistenabled:
-            if username in self.whitelist:
+            if addr in self.whitelist:
                 return True
             else:
                 return False
         if self.blacklistenabled:
-            if username in self.blacklist:
+            if addr in self.blacklist:
                 return False
             else:
                 return True
@@ -115,28 +131,54 @@ class Server:
                 self.log(f"failed to send message to {client} due to {e}")
 
     def shutdown(self):
-        # TODO
-        pass
+        self.running = False
+        self.log("shutting down server...")
 
-def run():
+        with self.lock:
+            for client in self.clients:
+                try:
+                    client.send("server is shutting down".encode())
+                    client.close()
+                except:
+                    pass
+            self.clients.clear()
+
+        try:
+            self.server.close()
+        except:
+            pass
+
+    def run(self):
+        self.log("starting threads...")
+        try:
+            acceptthread = threading.Thread(
+                target = self.acceptclient,
+                daemon=True
+            )
+            acceptthread.start()
+        except Exception as e:
+            self.log(f"error: {e}")
+        self.log("done")
+
+def main():
     server = None
     try:
+        print("starting server...")
         server = Server()
+        server.run()
 
-        acceptthread = threading.Thread(target = lambda: [server.handleclient(client) for client in iter(lambda: server.server.accept()[0], None)], daemon=True)
-        acceptthread.start()
-    except KeyboardInterrupt:
-        print("quitting server")
-    finally:
-        if server:
-            server.shutdown()
-        else:
-            print("server could not start")
+        server.log("checking if server is alive")
+        while server.running:
+            server.log("server is alive")
+            try:
+                time.sleep(20)
+                server.log("checking if server is alive")
+            except KeyboardInterrupt:
+                server.shutdown()
+                break
+    except Exception as e:
+        print(f"server error: {e}")
 
 
 if __name__ == "__main__":
-    print("starting server")
-    run()
-
-
-print("server quit")
+    main()
