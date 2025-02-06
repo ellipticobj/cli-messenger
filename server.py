@@ -57,6 +57,8 @@ class Server:
                 clientthread.start()
             except OSError:
                 break
+            except Exception as e:
+                self.log(f"error at clientthread: {e}")
 
     def handleclient(self, clsock, claddr):
         '''handles client connection'''
@@ -68,7 +70,7 @@ class Server:
                 self.broadcast(f"{username} joined")
                 self.log(f"{username} joined from {claddr}")
         else:
-            clsock.send("connection rejected")
+            clsock.send("connection rejected".encode())
             clsock.close()
             return
 
@@ -121,6 +123,7 @@ class Server:
                 return False
             else:
                 return True
+        return True
 
     def broadcast(self, message):
         for client in self.clients:

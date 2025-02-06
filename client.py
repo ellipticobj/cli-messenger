@@ -1,17 +1,19 @@
 import socket
+import sys
 import threading
 import curses
 from curses import wrapper
 from datetime import datetime
 
 class Client:
-    def __init__(self, stdscr):
+    def __init__(self, stdscr, debug=False):
         '''
         :3
         '''
         self.stdscr = stdscr
+        self.debug = debug
         self.running = True
-        self.host = "luna.hackclub.app"
+        self.host = "localhost" if debug else "luna.hackclub.app"
         self.port = 7171
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.username = ""
@@ -103,7 +105,7 @@ class Client:
         self.stdscr.refresh()
 
         prompt = "(Y/n)> "
-        scrtext = f"do you want to connect to the default server?\nip: luna.hackclub.app\nport: 7171\n{prompt}"
+        scrtext = f"do you want to connect to the default server?\nip: {self.host}\nport: {self.port}\n{prompt}"
         win = curses.newwin(6, 50, 5, 5)
 
         win.addstr(0, 0, scrtext)
@@ -188,7 +190,7 @@ class Client:
         try:
         # attempts to connect to server
         # timeout set to 5 seconds
-            self.client.settimeout(5)
+            self.client.settimeout(10)
             self.client.connect((self.host, self.port))
             self.client.send(self.username.encode())
 
@@ -284,6 +286,11 @@ class Client:
 
 def main(stdscr):
     try:
+        # args = sys.argv[1:]
+        # if args[0] == "-d" or args[0] == "--debug":
+        #     client = Client(stdscr, debug=True)
+        # else:
+        #     client = Client(stdscr, debug=False)
         client = Client(stdscr)
         client.run()
         print("disconnected")
