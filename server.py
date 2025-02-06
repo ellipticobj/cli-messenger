@@ -119,6 +119,7 @@ class Server:
         pass
 
 def run():
+    server = None
     try:
         server = Server()
 
@@ -127,7 +128,10 @@ def run():
     except KeyboardInterrupt:
         print("quitting server")
     finally:
-        server.shutdown()
+        if server:
+            server.shutdown()
+        else:
+            print("server could not start")
 
 
 if __name__ == "__main__":
