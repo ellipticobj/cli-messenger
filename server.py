@@ -15,8 +15,8 @@ class Server:
         self.running = True
         self.lock = threading.Lock()
 
-        self.whitelist = {} # set of whitelisted users
-        self.blacklist = {} # set
+        self.whitelist = {} # set of whitelisted ips
+        self.blacklist = {} # set of blacklisted ips
 
         self.whitelistenabled = False # enables/disables whitelist (ONLY allows list of allowed users)
         self.blacklistenabled = False # enables/disables blacklist (allows everyone EXCEPT disallowed users)
@@ -63,12 +63,13 @@ class Server:
     def handleclient(self, clsock, claddr):
         '''handles client connection'''
         username = clsock.recv(1024).decode()
+        clip, clport = claddr
 
-        if self.validate(username):
+        if self.validate(clip):
             with self.lock:
                 self.clients[clsock] = username
                 self.broadcast(f"{username} joined")
-                self.log(f"{username} joined from {claddr}")
+                self.log(f"{username} joined from {clip}:{claddr}")
         else:
             clsock.send("connection rejected".encode())
             clsock.close()
@@ -130,10 +131,11 @@ class Server:
             try:
                 self.log(message)
                 client.send(message.encode())
-            except Exception as e:
-                self.log(f"failed to send message to {client} due to {e}")
+            except:
+                del self.clients[client]
 
     def shutdown(self):
+        '''shutting down server'''
         self.running = False
         self.log("shutting down server...")
 

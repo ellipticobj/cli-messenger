@@ -157,6 +157,18 @@ class Client:
             curses.noecho()
             win.erase()
 
+            if len(str(self.port)) != 4:
+                self.port = None
+                win.addstr(3, 0, "port needs to be 4 digits")
+                continue
+
+            try:
+                self.port = int(self.port)
+            except:
+                self.port = None
+                win.addstr(3, 0, "port needs to be an integer")
+                continue
+
         win.addstr(0, 0, f"host >   {self.host}")
         win.addstr(1, 0, f"port >   {self.port}")
         win.addstr(3, 0, "[RETURN to continue]")
@@ -180,6 +192,9 @@ class Client:
         if not usedefault:
             self.getcustomserver()
 
+        if not self.host or not self.port:
+            self.exitscreen("critical error:\nhost or port does not exist")
+
         print(f"  HOST: {self.host}")
         print(f"  PORT: {self.port}")
 
@@ -191,7 +206,7 @@ class Client:
         # attempts to connect to server
         # timeout set to 5 seconds
             self.client.settimeout(10)
-            self.client.connect((self.host, self.port))
+            self.client.connect((self.host, int(self.port)))
             self.client.send(self.username.encode())
 
             response = self.client.recv(1024).decode()
@@ -199,6 +214,7 @@ class Client:
                 self.exitscreen("connection rejected by server")
                 self.running = False
                 return False
+            self.display(response)
 
             self.client.settimeout(None)
             return True
@@ -285,20 +301,23 @@ class Client:
         curses.endwin()
 
 def main(stdscr):
-    try:
-        # args = sys.argv[1:]
-        # if args[0] == "-d" or args[0] == "--debug":
-        #     client = Client(stdscr, debug=True)
-        # else:
-        #     client = Client(stdscr, debug=False)
-        client = Client(stdscr)
-        client.run()
-        print("disconnected")
-    except KeyboardInterrupt:
-        pass
-    except Exception as e:
-        print(f"error: {e}")
+    args = sys.argv[1:]
+    if args[0] == "-d" or args[0] == "--debug":
+        client = Client(stdscr, debug=True)
+    else:
+        client = Client(stdscr, debug=False)
+    client = Client(stdscr)
+    client.run()
+    while client.running:
+        try:
+            print("running")
+        except KeyboardInterrupt:
+            break
+        except Exception as e:
+            return e
+    return "disconnected"
 
 if __name__ == "__main__":
-    wrapper(main)
-    print("quit")
+    error = wrapper(main)
+    print(error)
+    print("program quit")
