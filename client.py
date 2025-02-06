@@ -322,6 +322,8 @@ if __name__ == "__main__":
         error = wrapper(main)
     except KeyboardInterrupt:
         pass # TODO
+    except curses.error:
+        pass
 
     print(error)
     print("program quit")

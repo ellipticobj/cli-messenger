@@ -101,6 +101,7 @@ class Server:
 
         if message:
             self.broadcast(f"{username}: {message}")
+            self.log(f"{username}: {message}")
 
     def filter(self, message):
         words = message.split()
