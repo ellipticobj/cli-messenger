@@ -42,7 +42,8 @@ client side commands (fun stuff ;3)
 server side commands:
 - easy white/blacklist toggling
 - profanity filter toggling
-
+server settings in json?
+executables for clients using pyinstaller
 
 # hosting your own server
 git clone this repo:
