@@ -24,6 +24,8 @@ run client.py
 python3 client.py
 ```
 
+the default server is **luna.hackclub.app:7171**
+
 # features
 ## implemented
 ### clients:
