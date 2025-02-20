@@ -1,12 +1,12 @@
-# cli-messenger
+# cuter
 
-simple cli messenger app made with python
+a simple messaging app using the command line made with python
 
 # quickstart
 
 git clone this repo:
 ```bash
-git clone git@github.com:https://github.com/ellipticobj/cli-messenger.git
+git clone https://github.com/ellipticobj/cuter.git
 ```
 
 cd into the directory:
@@ -48,7 +48,7 @@ executables for clients using pyinstaller
 # hosting your own server
 git clone this repo:
 ```bash
-git clone git@github.com:https://github.com/ellipticobj/cli-messenger.git
+git clone git@github.com:https://github.com/ellipticobj/cuter.git
 ```
 
 cd into the directory:
